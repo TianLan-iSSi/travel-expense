@@ -1,0 +1,31 @@
+body {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    padding-top: 2rem;
+}
+
+/* Custom card shadow */
+.card {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* Form input styling */
+.form-control {
+    border-radius: 8px;
+    padding: 10px 15px;
+}
+
+/* Button styling */
+.btn-primary {
+    background-color: #4361ee;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background-color: #3a56d4;
+}
