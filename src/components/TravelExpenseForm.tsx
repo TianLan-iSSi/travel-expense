@@ -13,7 +13,7 @@ import { FaPlane, FaFileUpload } from "react-icons/fa";
 import "react-datepicker/dist/react-datepicker.css";
 import { set } from "react-datepicker/dist/date_utils";
 
-interface TripDetails {
+interface TripExpenseDetails {
   fullName: string;
   email: string;
   startDate: string;
@@ -39,20 +39,21 @@ interface ExpenseItem {
 }
 
 const TravelExpenseForm = () => {
-  const [tripDetails, setTripDetails] = useState<TripDetails>({
-    fullName: "",
-    email: "",
-    startDate: new Date().toISOString().split("T")[0],
-    endDate: new Date().toISOString().split("T")[0],
-    dateDuration: 1,
-    travelLocation: "",
-    client: "",
-    project: "",
-    pmo: "",
-    resourceType: "",
-    additionalInfo: "",
-    expenses: [],
-  });
+  const [tripExpenseDetails, setTripExpenseDetails] =
+    useState<TripExpenseDetails>({
+      fullName: "",
+      email: "",
+      startDate: new Date().toISOString().split("T")[0],
+      endDate: new Date().toISOString().split("T")[0],
+      dateDuration: 1,
+      travelLocation: "",
+      client: "",
+      project: "",
+      pmo: "",
+      resourceType: "",
+      additionalInfo: "",
+      expenses: [],
+    });
 
   const [expenseItem, setExpenseItem] = useState<ExpenseItem>({
     id: "",
@@ -105,16 +106,16 @@ const TravelExpenseForm = () => {
   const currencies = ["USD", "EUR", "GBP", "CAD", "JPY"];
 
   useEffect(() => {
-    if (tripDetails.startDate && tripDetails.endDate) {
-      const start = new Date(tripDetails.startDate);
-      const end = new Date(tripDetails.endDate);
+    if (tripExpenseDetails.startDate && tripExpenseDetails.endDate) {
+      const start = new Date(tripExpenseDetails.startDate);
+      const end = new Date(tripExpenseDetails.endDate);
       const diff = Math.max(
         1,
         Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
       );
-      setTripDetails((prev) => ({ ...prev, dateDuration: diff }));
+      setTripExpenseDetails((prev) => ({ ...prev, dateDuration: diff }));
     }
-  }, [tripDetails.startDate, tripDetails.endDate]);
+  }, [tripExpenseDetails.startDate, tripExpenseDetails.endDate]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -122,7 +123,7 @@ const TravelExpenseForm = () => {
     >
   ) => {
     const { name, value } = e.target;
-    setTripDetails((prev) => ({ ...prev, [name]: value }));
+    setTripExpenseDetails((prev) => ({ ...prev, [name]: value }));
     // Clear error when user starts typing
     setFormErrors((prev) => ({ ...prev, [name]: false }));
     setError("");
@@ -140,20 +141,21 @@ const TravelExpenseForm = () => {
   };
 
   const validateDetailsTab = () => {
-    const startDate = new Date(tripDetails.startDate);
-    const endDate = new Date(tripDetails.endDate);
+    const startDate = new Date(tripExpenseDetails.startDate);
+    const endDate = new Date(tripExpenseDetails.endDate);
 
     const errors = {
-      fullName: !tripDetails.fullName.trim(),
+      fullName: !tripExpenseDetails.fullName.trim(),
       email:
-        !tripDetails.email.trim() || !/^\S+@\S+\.\S+$/.test(tripDetails.email),
-      startDate: !tripDetails.startDate,
-      endDate: !tripDetails.endDate || endDate < startDate,
-      travelLocation: !tripDetails.travelLocation.trim(),
-      client: !tripDetails.client,
-      project: !tripDetails.project.trim(),
-      pmo: !tripDetails.pmo,
-      resourceType: !tripDetails.resourceType,
+        !tripExpenseDetails.email.trim() ||
+        !/^\S+@\S+\.\S+$/.test(tripExpenseDetails.email),
+      startDate: !tripExpenseDetails.startDate,
+      endDate: !tripExpenseDetails.endDate || endDate < startDate,
+      travelLocation: !tripExpenseDetails.travelLocation.trim(),
+      client: !tripExpenseDetails.client,
+      project: !tripExpenseDetails.project.trim(),
+      pmo: !tripExpenseDetails.pmo,
+      resourceType: !tripExpenseDetails.resourceType,
     };
 
     setFormErrors(errors);
@@ -166,7 +168,7 @@ const TravelExpenseForm = () => {
   };
 
   const validateExpensesTab = () => {
-    if (tripDetails.expenses.length === 0) {
+    if (tripExpenseDetails.expenses.length === 0) {
       setError("Please add at least one tripDetails.");
       return false;
     }
@@ -203,7 +205,7 @@ const TravelExpenseForm = () => {
       amount: Math.round(expenseItem.amount * 100) / 100,
     };
 
-    setTripDetails((prev) => ({
+    setTripExpenseDetails((prev) => ({
       ...prev,
       expenses: [...prev.expenses, expenseToAdd],
     }));
@@ -220,7 +222,7 @@ const TravelExpenseForm = () => {
   };
 
   const handleRemoveExpense = (id: string) => {
-    setTripDetails((prev) => ({
+    setTripExpenseDetails((prev) => ({
       ...prev,
       expenses: prev.expenses.filter((exp) => exp.id !== id),
     }));
@@ -234,7 +236,7 @@ const TravelExpenseForm = () => {
   };
 
   const handleRemoveReceipt = (expenseId: string) => {
-    setTripDetails((prev) => ({
+    setTripExpenseDetails((prev) => ({
       ...prev,
       expenses: prev.expenses.map((exp) =>
         exp.id === expenseId ? { ...exp, receiptFile: null } : exp
@@ -291,7 +293,7 @@ const TravelExpenseForm = () => {
 
       // Convert each expense, adding base64 field if receiptFile exists
       const expensesWithReceipts = await Promise.all(
-        tripDetails.expenses.map(async (exp) => {
+        tripExpenseDetails.expenses.map(async (exp) => {
           if (exp.receiptFile) {
             const base64 = await fileToBase64(exp.receiptFile);
             return {
@@ -303,14 +305,14 @@ const TravelExpenseForm = () => {
         })
       );
 
-      const nameInitial = tripDetails.fullName
+      const nameInitial = tripExpenseDetails.fullName
         .split(" ")
         .filter((word) => word.length > 0)
         .map((word) => word[0].toUpperCase())
         .join("");
 
       let invoiceDatePart = "";
-      const startDate = new Date(tripDetails.startDate);
+      const startDate = new Date(tripExpenseDetails.startDate);
 
       if (startDate) {
         const yy = String(startDate.getFullYear()).slice(-2);
@@ -320,22 +322,22 @@ const TravelExpenseForm = () => {
         invoiceDatePart = `${yy}${mm}${dd}`;
       }
 
-      const newInvoiceNum = `iSSi-EXP-${tripDetails.client}-${nameInitial}-${invoiceDatePart}`;
+      const newInvoiceNum = `iSSi-EXP-${tripExpenseDetails.client}-${nameInitial}-${invoiceDatePart}`;
       setInvoiceNum(newInvoiceNum);
 
       const formData = {
-        fullName: tripDetails.fullName,
+        fullName: tripExpenseDetails.fullName,
         nameInitial: nameInitial,
-        email: tripDetails.email,
-        startDate: tripDetails.startDate,
-        endDate: tripDetails.endDate,
-        dateDuration: String(tripDetails.dateDuration),
-        travelLocation: tripDetails.travelLocation,
-        client: tripDetails.client,
-        project: tripDetails.project,
-        pmo: tripDetails.pmo,
-        resourceType: tripDetails.resourceType,
-        additionalInfo: tripDetails.additionalInfo,
+        email: tripExpenseDetails.email,
+        startDate: tripExpenseDetails.startDate,
+        endDate: tripExpenseDetails.endDate,
+        dateDuration: String(tripExpenseDetails.dateDuration),
+        travelLocation: tripExpenseDetails.travelLocation,
+        client: tripExpenseDetails.client,
+        project: tripExpenseDetails.project,
+        pmo: tripExpenseDetails.pmo,
+        resourceType: tripExpenseDetails.resourceType,
+        additionalInfo: tripExpenseDetails.additionalInfo,
         expenses: expensesWithReceipts,
         invoiceDatePart: invoiceDatePart,
         newInvoiceNum: newInvoiceNum,
@@ -356,7 +358,7 @@ const TravelExpenseForm = () => {
 
       if (result.success) {
         setSuccess(true);
-        setTripDetails({
+        setTripExpenseDetails({
           fullName: "",
           email: "",
           startDate: new Date().toISOString().split("T")[0],
@@ -448,7 +450,7 @@ const TravelExpenseForm = () => {
                         <Form.Control
                           type="text"
                           name="fullName"
-                          value={tripDetails.fullName}
+                          value={tripExpenseDetails.fullName}
                           onChange={handleChange}
                           className={`border-secondary-subtle rounded-2 ${
                             formErrors.fullName ? "is-invalid" : ""
@@ -471,7 +473,7 @@ const TravelExpenseForm = () => {
                         <Form.Control
                           type="email"
                           name="email"
-                          value={tripDetails.email}
+                          value={tripExpenseDetails.email}
                           onChange={handleChange}
                           className={`border-secondary-subtle rounded-2 ${
                             formErrors.email ? "is-invalid" : ""
@@ -480,7 +482,7 @@ const TravelExpenseForm = () => {
                         />
                         {formErrors.email && (
                           <div className="invalid-feedback small">
-                            {tripDetails.email.trim()
+                            {tripExpenseDetails.email.trim()
                               ? "Invalid email"
                               : "Required field"}
                           </div>
@@ -495,7 +497,7 @@ const TravelExpenseForm = () => {
                         </Form.Label>
                         <Form.Select
                           name="resourceType"
-                          value={tripDetails.resourceType}
+                          value={tripExpenseDetails.resourceType}
                           onChange={handleChange}
                           className={`border-secondary-subtle rounded-2 ${
                             formErrors.resourceType ? "is-invalid" : ""
@@ -532,7 +534,7 @@ const TravelExpenseForm = () => {
                         <Form.Control
                           type="date"
                           name="startDate"
-                          value={tripDetails.startDate}
+                          value={tripExpenseDetails.startDate}
                           onChange={handleChange}
                           className={`border-secondary-subtle rounded-2 ${
                             formErrors.startDate ? "is-invalid" : ""
@@ -555,7 +557,7 @@ const TravelExpenseForm = () => {
                         <Form.Control
                           type="date"
                           name="endDate"
-                          value={tripDetails.endDate}
+                          value={tripExpenseDetails.endDate}
                           onChange={handleChange}
                           className={`border-secondary-subtle rounded-2 ${
                             formErrors.endDate ? "is-invalid" : ""
@@ -577,7 +579,7 @@ const TravelExpenseForm = () => {
                         </Form.Label>
                         <Form.Control
                           type="number"
-                          value={tripDetails.dateDuration}
+                          value={tripExpenseDetails.dateDuration}
                           readOnly
                           className="border-0 bg-light rounded-2 text-center fw-semibold"
                         />
@@ -594,7 +596,7 @@ const TravelExpenseForm = () => {
                         <Form.Control
                           type="text"
                           name="travelLocation"
-                          value={tripDetails.travelLocation}
+                          value={tripExpenseDetails.travelLocation}
                           onChange={handleChange}
                           className={`border-secondary-subtle rounded-2 ${
                             formErrors.travelLocation ? "is-invalid" : ""
@@ -617,7 +619,7 @@ const TravelExpenseForm = () => {
                         <Form.Control
                           type="text"
                           name="project"
-                          value={tripDetails.project}
+                          value={tripExpenseDetails.project}
                           onChange={handleChange}
                           className={`border-secondary-subtle rounded-2 ${
                             formErrors.project ? "is-invalid" : ""
@@ -647,7 +649,7 @@ const TravelExpenseForm = () => {
                         </Form.Label>
                         <Form.Select
                           name="client"
-                          value={tripDetails.client}
+                          value={tripExpenseDetails.client}
                           onChange={handleChange}
                           className={`border-secondary-subtle rounded-2 ${
                             formErrors.client ? "is-invalid" : ""
@@ -689,7 +691,7 @@ const TravelExpenseForm = () => {
                         </Form.Label>
                         <Form.Select
                           name="pmo"
-                          value={tripDetails.pmo}
+                          value={tripExpenseDetails.pmo}
                           onChange={handleChange}
                           className={`border-secondary-subtle rounded-2 ${
                             formErrors.pmo ? "is-invalid" : ""
@@ -732,7 +734,7 @@ const TravelExpenseForm = () => {
                     <Form.Control
                       as="textarea"
                       name="additionalInfo"
-                      value={tripDetails.additionalInfo}
+                      value={tripExpenseDetails.additionalInfo}
                       onChange={handleChange}
                       className="border-secondary-subtle rounded-2"
                       rows={2}
@@ -916,7 +918,7 @@ const TravelExpenseForm = () => {
                 </Card>
 
                 {/* Expense List */}
-                {tripDetails.expenses.length > 0 ? (
+                {tripExpenseDetails.expenses.length > 0 ? (
                   <div className="table-responsive">
                     <table className="table align-middle table-hover border">
                       <thead className="table-light">
@@ -931,7 +933,7 @@ const TravelExpenseForm = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {tripDetails.expenses.map((item) => (
+                        {tripExpenseDetails.expenses.map((item) => (
                           <tr key={item.id}>
                             <td>
                               {new Date(item.expenseDate).toLocaleDateString()}
@@ -973,7 +975,7 @@ const TravelExpenseForm = () => {
                           <td className="text-end">
                             {(
                               Math.ceil(
-                                tripDetails.expenses.reduce(
+                                tripExpenseDetails.expenses.reduce(
                                   (sum, item) => sum + item.amount,
                                   0
                                 ) * 100
@@ -1019,7 +1021,7 @@ const TravelExpenseForm = () => {
                 <Button
                   variant="success"
                   onClick={handleSubmit}
-                  disabled={loading || tripDetails.expenses.length === 0}
+                  disabled={loading || tripExpenseDetails.expenses.length === 0}
                 >
                   {loading ? (
                     <>
